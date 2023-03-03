@@ -3,28 +3,8 @@ import json
 from colorama import Fore
 import datetime
 
-"""
-shop
 
-magazin
-restaranga oxshash + (product soni)
-
-----------------------------------------------------------------
-restaran
-
-1 login
-2 ovqat qoshish
-3 ichimlik qoshish
-4 hisobot
-
-* botirjon01
-* -mijoz
-
-* 1. ovqatga buyurtma
-* 2. oldingi buyurtmalari
-* 3. exit
-"""
-cu = 1
+cu = 0
 
 
 class Restaurant:
@@ -58,17 +38,21 @@ class Restaurant:
             file = json.load(f)
 
             for i in file:
-                if i["username"].lower() == username.lower():
-                    if i["password"].lower() == password.lower():
-                        cu = i["username"]
-                        return True
+                if i["username"].lower() == username.lower() and i["password"].lower() == password.lower():
+                    cu = i["username"]
+                    return True
                 else:
-                    print(Fore.YELLOW + 'username exist try another username!')
                     return False
 
     @staticmethod
     def make_p_id():
         with open('products.json', 'r') as f:
+            e = json.load(f)
+            return len(e) + 1
+
+    @staticmethod
+    def make_u_id():
+        with open('users.json', 'r') as f:
             e = json.load(f)
             return len(e) + 1
 
@@ -99,7 +83,7 @@ class Restaurant:
         p_id = self.make_p_id()
         name = input(Fore.CYAN + 'Product name: ')
         price = input(Fore.MAGENTA + 'Product price: ')
-        quantity = input(Fore.LIGHTRED_EX + 'Product quantity: ')
+        quantity = int(input(Fore.LIGHTRED_EX + 'Product quantity: '))
 
         d = {
             "product type": "drink",
@@ -123,6 +107,7 @@ class Restaurant:
 
     # enterance
     def enterance(self):
+        print(cu, type(cu))
         enterance_text = '''
             1. Login
             2. add food
@@ -147,12 +132,17 @@ class Restaurant:
         self.enterance()
 
     # sign up
-    @staticmethod
-    def signup(username, password):
+    def signup(self, username, password):
         with open("users.json", "r") as f:
             file = json.load(f)
 
-        new_user = {"username": username, "password": password}
+        u_id = self.make_u_id()
+        new_user = {
+            "id": u_id,
+            "username": username,
+            "password": password,
+            "order history": []
+        }
         file.append(new_user)
         with open("users.json", "w") as f:
             json.dump(file, f, indent=2)
@@ -170,6 +160,8 @@ class Restaurant:
             if sign_up.lower() in ['yes', 'y', 'yep']:
                 self.signup(username, password)
                 print(Fore.GREEN + 'Sign up successfully')
+            else:
+                self.enterance()
 
     # add information to the history
     @staticmethod
@@ -229,8 +221,9 @@ class Restaurant:
             if ays == int(ays):
 
                 for i in t:
-                    if ays >= i["quantity"]:
+                    if ays >= int(i["quantity"]):
                         if i["product id"] == sf:
+                            print(type(i["quantity"]))
                             i["quantity"] -= ays
 
             with open("products.json", "w") as z:
