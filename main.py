@@ -3,11 +3,33 @@ import json
 from colorama import Fore
 import datetime
 
+"""
+shop
 
-cu = 0
+magazin
+restaranga oxshash + (product soni)
+
+----------------------------------------------------------------
+restaran
+
+1 login
+2 ovqat qoshish
+3 ichimlik qoshish
+4 hisobot
+
+* botirjon01
+* -mijoz
+
+* 1. ovqatga buyurtma
+* 2. oldingi buyurtmalari
+* 3. exit
+"""
 
 
 class Restaurant:
+    def __init__(self):
+        self.current_user = 0
+
     # create json files
     @staticmethod
     def create_json():
@@ -19,27 +41,28 @@ class Restaurant:
             with open('users.json', 'w') as f:
                 f.write('[]')
 
-    create_json()
-
     # order history
-    @staticmethod
-    def order_history():
+
+    def order_history(self):
         with open("users.json", "r") as f:
             e = json.load(f)
 
             for i in e:
-                if i["id"] == str(cu):
+                if i["id"] == self.current_user:
                     print(f'history: {i["order history"]}')
 
+                else:
+                    print(Fore.YELLOW + "id not found")
+
     # check user
-    @staticmethod
-    def check_user(username, password):
+
+    def check_user(self, username, password):
         with open('users.json', 'r') as f:
             file = json.load(f)
 
             for i in file:
                 if i["username"].lower() == username.lower() and i["password"].lower() == password.lower():
-                    cu = i["username"]
+                    self.current_user = i["username"]
                     return True
                 else:
                     return False
@@ -105,9 +128,9 @@ class Restaurant:
         print(Fore.RED + 'This page not finished')
         pass
 
-    # enterance
+    # the enterance
     def enterance(self):
-        print(cu, type(cu))
+        self.create_json()
         enterance_text = '''
             1. Login
             2. add food
@@ -137,6 +160,8 @@ class Restaurant:
             file = json.load(f)
 
         u_id = self.make_u_id()
+        self.current_user = int(u_id)
+        print(self.current_user, type(self.current_user))
         new_user = {
             "id": u_id,
             "username": username,
@@ -160,12 +185,13 @@ class Restaurant:
             if sign_up.lower() in ['yes', 'y', 'yep']:
                 self.signup(username, password)
                 print(Fore.GREEN + 'Sign up successfully')
+                self.dining_menu()
             else:
-                self.enterance()
+                self.dining_menu()
 
     # add information to the history
-    @staticmethod
-    def add_to_history(p_name, p_price, p_quantity):
+
+    def add_to_history(self, p_name, p_price, p_quantity):
         with open("users.json", "r") as d:
             users_file = json.load(d)
             print(type(users_file))
@@ -173,62 +199,73 @@ class Restaurant:
             res = f" product: {p_name} , price: {p_price} - {p_quantity}x, time: {datetime.datetime.now()}"
 
             for i in users_file:
-                if i["id"] == cu:
+                if i["id"] == self.current_user:
                     i["order history"].append(res)
 
         with open("users.json", "w") as f:
             json.dump(users_file, f, indent=2)
 
+    # get food
     @staticmethod
     def get_food():
         with open("products.json", "r") as f:
             t = json.load(f)
-            for i in t:
-                if i["product type"] == "food":
-                    print(Fore.LIGHTGREEN_EX + f'{i["product id"]} {i["product name"]} ~~ {i["product price"]}')
-
-            sf = input(Fore.LIGHTCYAN_EX + '$ ')
-            for i in t:
-                if i["product id"] == sf:
+            if len(t) >= 1:
+                for i in t:
                     if i["product type"] == "food":
-                        print(Fore.LIGHTGREEN_EX + f'{i["product name"]} |=> {i["product price"]}')
-            ays = int(input(Fore.RESET + 'how much do you want?\n$ '))
-            if ays == int(ays):
+                        print(Fore.LIGHTGREEN_EX + f'+------------------------------+\n'
+                                                   f'{i["product id"]} {i["product name"]} ~~ {i["product price"]}\n'
+                                                   f'+------------------------------+\n')
+                sf = input(Fore.LIGHTCYAN_EX + '$ ')
 
                 for i in t:
-                    if ays >= i["quantity"]:
-                        if i["product id"] == sf:
-                            i["quantity"] -= ays
+                    if i["product id"] == sf:
+                        if i["product type"] == "food":
+                            print(Fore.LIGHTGREEN_EX + f'{i["product name"]} |=> {i["product price"]}')
+                ays = int(input(Fore.RESET + 'how much do you want?\n$ '))
+                if ays == int(ays):
 
-            with open("products.json", "w") as z:
-                json.dump(t, z, indent=2)
-        print(Fore.GREEN + "successfully ordered products")
+                    for i in t:
+                        if ays >= i["quantity"]:
+                            if i["product id"] == sf:
+                                i["quantity"] -= ays
 
+                with open("products.json", "w") as z:
+                    json.dump(t, z, indent=2)
+                print(Fore.GREEN + "successfully ordered products")
+            else:
+                print('foods  not found')
+
+    # get drink
     @staticmethod
     def get_drink():
         with open("products.json", "r") as f:
             t = json.load(f)
-            for i in t:
-                if i["product type"] == "drink":
-                    print(Fore.LIGHTGREEN_EX + f'{i["product id"]} {i["product name"]} ~~ {i["product price"]}')
-
-            sf = input(Fore.LIGHTCYAN_EX + '$ ')
-            for i in t:
-                if i["product id"] == sf:
+            if len(t) >= 1:
+                for i in t:
                     if i["product type"] == "drink":
-                        print(Fore.LIGHTGREEN_EX + f'{i["product name"]} |=> {i["product price"]}')
-            ays = int(input(Fore.RESET + 'how much do you want?\n$ '))
-            if ays == int(ays):
+                        print(Fore.LIGHTGREEN_EX + f'+------------------------------+\n'
+                                                   f'{i["product id"]} {i["product name"]} ~~ {i["product price"]}'
+                                                   f'+------------------------------+\n')
+                sf = input(Fore.LIGHTCYAN_EX + '$ ')
 
                 for i in t:
-                    if ays >= int(i["quantity"]):
-                        if i["product id"] == sf:
-                            print(type(i["quantity"]))
-                            i["quantity"] -= ays
+                    if i["product id"] == sf:
+                        if i["product type"] == "drink":
+                            print(Fore.LIGHTGREEN_EX + f'{i["product name"]} |=> {i["product price"]}')
+                ays = int(input(Fore.RESET + 'how much do you want?\n$ '))
+                if ays == int(ays):
 
-            with open("products.json", "w") as z:
-                json.dump(t, z, indent=2)
-        print(Fore.GREEN + "successfully ordered products")
+                    for i in t:
+                        if ays >= i["quantity"]:
+                            if i["product id"] == sf:
+                                i["quantity"] -= ays
+
+                with open("products.json", "w") as z:
+                    json.dump(t, z, indent=2)
+                print(Fore.GREEN + "successfully ordered products")
+            else:
+                print('drinks not found')
 
     # order food and quantity - x
     def order_food(self):
