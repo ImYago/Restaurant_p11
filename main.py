@@ -1,5 +1,7 @@
 import os
 import json
+from json import JSONDecoder
+
 from colorama import Fore
 import datetime
 
@@ -62,7 +64,7 @@ class Restaurant:
 
             for i in file:
                 if i["username"].lower() == username.lower() and i["password"].lower() == password.lower():
-                    self.current_user = i["username"]
+                    self.current_user = i["id"]
                     return True
                 else:
                     return False
@@ -123,10 +125,23 @@ class Restaurant:
         with open("products.json", "w") as f:
             json.dump(s, f, indent=2)
 
-    @staticmethod
-    def report():
-        print(Fore.RED + 'This page not finished')
-        pass
+    def report(self):
+        with open("users.json", "r") as f:
+            print(self.current_user)
+            f = json.load(f)
+            for i in f:
+                if i["id"] == self.current_user:
+                    j = i["order history"]
+                    if len(j) >= 1:
+                        print(f'last: {j[-1]}')
+                        break
+                    else:
+                        print(Fore.LIGHTCYAN_EX + 'history not found')
+                        break
+
+                else:
+                    print(Fore.YELLOW + "user not signed , please sign in for use report")
+                    break
 
     # the enterance
     def enterance(self):
@@ -154,23 +169,43 @@ class Restaurant:
             print(Fore.YELLOW + 'selection not exist')
         self.enterance()
 
-    # sign up
-    def signup(self, username, password):
+    def check_username(self, username):
+
+        # if username is found return: False
+        # if username is not found return: True
+
         with open("users.json", "r") as f:
             file = json.load(f)
 
-        u_id = self.make_u_id()
-        self.current_user = int(u_id)
-        print(self.current_user, type(self.current_user))
-        new_user = {
-            "id": u_id,
-            "username": username,
-            "password": password,
-            "order history": []
-        }
-        file.append(new_user)
-        with open("users.json", "w") as f:
-            json.dump(file, f, indent=2)
+            for i in file:
+                if username == i['username']:
+                    print(Fore.YELLOW + "this username already taken, try another username !")
+                    username2 = input(': ')
+                    self.check_username(username2)
+                    return False
+                else:
+                    return True
+
+    # sign up
+    def signup(self, username, password):
+        if not self.check_username(username):
+            with open("users.json", "r") as f:
+                file = json.load(f)
+
+            u_id = self.make_u_id()
+            self.current_user = int(u_id)
+
+            new_user = {
+                "id": u_id,
+                "username": username,
+                "password": password,
+                "order history": []
+            }
+            file.append(new_user)
+            with open("users.json", "w") as f:
+                json.dump(file, f, indent=2)
+        else:
+            print(Fore.RED + 'error with username taking ')
 
     # login
     def login(self):
@@ -184,17 +219,16 @@ class Restaurant:
             sign_up = input(Fore.YELLOW + 'User not found !\nWould you sign up?\n[y/n]: ')
             if sign_up.lower() in ['yes', 'y', 'yep']:
                 self.signup(username, password)
-                print(Fore.GREEN + 'Sign up successfully')
+                print(Fore.GREEN + 'User signed up successfully !')
                 self.dining_menu()
             else:
-                self.dining_menu()
+                print(Fore.YELLOW + 'User not signed')
+                self.enterance()
 
     # add information to the history
-
     def add_to_history(self, p_name, p_price, p_quantity):
         with open("users.json", "r") as d:
             users_file = json.load(d)
-            print(type(users_file))
 
             res = f" product: {p_name} , price: {p_price} - {p_quantity}x, time: {datetime.datetime.now()}"
 
@@ -282,8 +316,7 @@ class Restaurant:
         menu = '''
         1. order food
         2. history
-        3. exit\n$ 
-        '''
+        3. exit\n$ '''
         s = input(Fore.MAGENTA + menu)
         if s == '1':
             self.order_food()
@@ -298,7 +331,7 @@ class Restaurant:
 # ----------------------------------------------------------------
 a = Restaurant()
 a.enterance()
-
+# a.order_food()
 # ----------------------------------------------------------------
 
 # if you finish project test all functions, don't forget testing
@@ -316,6 +349,7 @@ a.enterance()
 
 # ---------------------( PROBLEMS / BUGS )------------------>
 """
-#~1  If json file is empty, return empty warnings
+#~1  If json file is empty, return empty warnings -> S u c c e s s
+
 """
 # ---------------------------------------------------------->
