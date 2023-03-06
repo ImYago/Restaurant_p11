@@ -1,7 +1,5 @@
 import os
 import json
-from json import JSONDecoder
-
 from colorama import Fore
 import datetime
 
@@ -29,6 +27,7 @@ restaran
 
 
 class Restaurant:
+    # simple variables
     def __init__(self):
         self.current_user = 0
 
@@ -44,7 +43,6 @@ class Restaurant:
                 f.write('[]')
 
     # order history
-
     def order_history(self):
         with open("users.json", "r") as f:
             e = json.load(f)
@@ -57,17 +55,18 @@ class Restaurant:
                     print(Fore.YELLOW + "id not found")
 
     # check user
+    def check_user(self):
 
-    def check_user(self, username, password):
+        username = input(Fore.RESET + "Enter username: ")
+        password = input(Fore.RESET + "Enter password: ")
+
         with open('users.json', 'r') as f:
             file = json.load(f)
-
             for i in file:
-                if i["username"].lower() == username.lower() and i["password"].lower() == password.lower():
-                    self.current_user = i["id"]
+                if i["username"] == username and i["password"] == password:
+                    self.current_user = int(i["id"])
                     return True
-                else:
-                    return False
+            return False
 
     @staticmethod
     def make_p_id():
@@ -81,12 +80,13 @@ class Restaurant:
             e = json.load(f)
             return len(e) + 1
 
+    # add food
     def add_food(self):
         print(Fore.RED + '[default product type: "food"]')
         p_id = self.make_p_id()
-        name = input(Fore.CYAN + 'Product name: ')
-        price = input(Fore.MAGENTA + 'Product price: ')
-        quantity = int(input(Fore.LIGHTRED_EX + 'Product quantity: '))
+        name = input(Fore.CYAN + 'Food name: ')
+        price = input(Fore.MAGENTA + 'Food price: ')
+        quantity = int(input(Fore.LIGHTRED_EX + 'Food quantity: '))
 
         d = {
             "product type": "food",
@@ -103,12 +103,13 @@ class Restaurant:
         with open("products.json", "w") as f:
             json.dump(s, f, indent=2)
 
+    # add drink
     def add_drink(self):
         print(Fore.RED + '[default product type: "drink"]')
         p_id = self.make_p_id()
-        name = input(Fore.CYAN + 'Product name: ')
-        price = input(Fore.MAGENTA + 'Product price: ')
-        quantity = int(input(Fore.LIGHTRED_EX + 'Product quantity: '))
+        name = input(Fore.CYAN + 'Drink name: ')
+        price = input(Fore.MAGENTA + 'Drink price: ')
+        quantity = int(input(Fore.LIGHTRED_EX + 'Drink quantity: '))
 
         d = {
             "product type": "drink",
@@ -125,6 +126,7 @@ class Restaurant:
         with open("products.json", "w") as f:
             json.dump(s, f, indent=2)
 
+    # report (last order)
     def report(self):
         with open("users.json", "r") as f:
             print(self.current_user)
@@ -143,51 +145,36 @@ class Restaurant:
                     print(Fore.YELLOW + "user not signed , please sign in for use report")
                     break
 
-    # the enterance
-    def enterance(self):
-        self.create_json()
-        enterance_text = '''
-            1. Login
-            2. add food
-            3. add drink
-            4. report
-            5. exit
-            : '''
-        selection = input(Fore.BLUE + enterance_text)
-        if selection == '1':
-            self.login()
-        elif selection == '2':
-            self.add_food()
-        elif selection == '3':
-            self.add_drink()
-        elif selection == '4':
-            self.report()
-        elif selection == '5':
-            print(Fore.CYAN + "https://www.pdp.uz")
-            exit()
-        else:
-            print(Fore.YELLOW + 'selection not exist')
-        self.enterance()
-
-    def check_username(self, username):
-
-        # if username is found return: False
-        # if username is not found return: True
-
+    # username checking
+    @staticmethod
+    def check_username(username):
         with open("users.json", "r") as f:
             file = json.load(f)
 
             for i in file:
                 if username == i['username']:
-                    print(Fore.YELLOW + "this username already taken, try another username !")
-                    username2 = input(': ')
-                    self.check_username(username2)
-                    return False
-                else:
                     return True
+            return False
+
+    # login
+    def login(self):
+        if self.check_user():
+            print(Fore.GREEN + 'Success!')
+            return True
+        else:
+            sign_up = input(Fore.YELLOW + 'Password or username incorrect!\n'
+                                          'Would you try again? [y/n]\n'
+                                          ': ')
+            if sign_up.lower() in ['yes', 'y', 'yep', 'ha', 'yeah']:
+                return self.login()
+
+        return False
 
     # sign up
-    def signup(self, username, password):
+    def signup(self):
+        username = input('Enter username: ')
+        password = input('Enter password: ')
+
         if not self.check_username(username):
             with open("users.json", "r") as f:
                 file = json.load(f)
@@ -204,134 +191,153 @@ class Restaurant:
             file.append(new_user)
             with open("users.json", "w") as f:
                 json.dump(file, f, indent=2)
+            return True
         else:
-            print(Fore.RED + 'error with username taking ')
+            print(Fore.YELLOW + 'Username already taken')
+            self.signup()
 
-    # login
-    def login(self):
-        username = input(Fore.GREEN + 'Enter username: ')
-        password = input(Fore.GREEN + 'Enter password: ')
+    def sign(self):
+        print(Fore.GREEN + '1. Sign In \n'
+                           '2. Sign Up \n'
+                           '3. exit')
+        s = input(Fore.LIGHTGREEN_EX + '$ ')
 
-        if self.check_user(username, password):
-            print(Fore.GREEN + 'Successfully logged in!')
-            self.dining_menu()
-        else:
-            sign_up = input(Fore.YELLOW + 'User not found !\nWould you sign up?\n[y/n]: ')
-            if sign_up.lower() in ['yes', 'y', 'yep']:
-                self.signup(username, password)
-                print(Fore.GREEN + 'User signed up successfully !')
-                self.dining_menu()
-            else:
-                print(Fore.YELLOW + 'User not signed')
-                self.enterance()
+        if not s.isalpha():
+            # Log in
+            if int(s) == 1:
+                return self.login()
+
+            # Sign up
+            elif int(s) == 2:
+                if self.signup():
+                    print(Fore.LIGHTGREEN_EX + 'Success !')
+                    return True
+        return False
 
     # add information to the history
     def add_to_history(self, p_name, p_price, p_quantity):
         with open("users.json", "r") as d:
             users_file = json.load(d)
-
-            res = f" product: {p_name} , price: {p_price} - {p_quantity}x, time: {datetime.datetime.now()}"
+            time = datetime.datetime.now()
+            res = [p_name, p_price, p_quantity, str(time)]
 
             for i in users_file:
+                print(self.current_user)
                 if i["id"] == self.current_user:
                     i["order history"].append(res)
+                    print(i["order history"])
 
         with open("users.json", "w") as f:
             json.dump(users_file, f, indent=2)
 
     # get food
-    @staticmethod
-    def get_food():
+    def get_food(self, _type):
         with open("products.json", "r") as f:
-            t = json.load(f)
-            if len(t) >= 1:
-                for i in t:
-                    if i["product type"] == "food":
-                        print(Fore.LIGHTGREEN_EX + f'+------------------------------+\n'
-                                                   f'{i["product id"]} {i["product name"]} ~~ {i["product price"]}\n'
-                                                   f'+------------------------------+\n')
-                sf = input(Fore.LIGHTCYAN_EX + '$ ')
+            products = json.load(f)
+            if len(products) >= 1:
+                for i, v in enumerate(products):
+                    if v["type"] == _type:
+                        items = products[i]["items"]
+                        item_id = i
+                        for product in v["items"]:
+                            print(Fore.LIGHTGREEN_EX + f'+------------------------------+\n'
+                                                       f'{product["id"]}. {product["name"]} ~~ {product["price"]} ~~ '
+                                                       f'{"in stock" if product["quantity"] else "out of stock"} '
+                                                       f'\n'
+                                                       f'+------------------------------+\n')
+                order_id = int(input(Fore.LIGHTCYAN_EX + '$ '))
 
-                for i in t:
-                    if i["product id"] == sf:
-                        if i["product type"] == "food":
-                            print(Fore.LIGHTGREEN_EX + f'{i["product name"]} |=> {i["product price"]}')
-                ays = int(input(Fore.RESET + 'how much do you want?\n$ '))
-                if ays == int(ays):
+                for i, v in enumerate(items):
+                    if v["id"] == order_id:
+                        print(Fore.LIGHTGREEN_EX + f'{v["name"]} |=> {v["price"]}')
+                        count = int(input(Fore.RESET + 'how much do you want?\n$ '))
+                        while count > v["quantity"]:
+                            count = int(input(Fore.RESET + f'how much do you want? {0} for exit\n$ '))
+                        if count < 1:
+                            return False
+                        self.add_to_history(v["name"], v["price"], count)
+                        products[item_id]['items'][i]["quantity"] -= count
+                        with open("products.json", "w") as z:
+                            json.dump(products, z, indent=2)
+                        print(Fore.GREEN + "successfully ordered products")
+                        return True
 
-                    for i in t:
-                        if ays >= i["quantity"]:
-                            if i["product id"] == sf:
-                                i["quantity"] -= ays
-
-                with open("products.json", "w") as z:
-                    json.dump(t, z, indent=2)
-                print(Fore.GREEN + "successfully ordered products")
-            else:
-                print('foods  not found')
-
-    # get drink
-    @staticmethod
-    def get_drink():
-        with open("products.json", "r") as f:
-            t = json.load(f)
-            if len(t) >= 1:
-                for i in t:
-                    if i["product type"] == "drink":
-                        print(Fore.LIGHTGREEN_EX + f'+------------------------------+\n'
-                                                   f'{i["product id"]} {i["product name"]} ~~ {i["product price"]}'
-                                                   f'+------------------------------+\n')
-                sf = input(Fore.LIGHTCYAN_EX + '$ ')
-
-                for i in t:
-                    if i["product id"] == sf:
-                        if i["product type"] == "drink":
-                            print(Fore.LIGHTGREEN_EX + f'{i["product name"]} |=> {i["product price"]}')
-                ays = int(input(Fore.RESET + 'how much do you want?\n$ '))
-                if ays == int(ays):
-
-                    for i in t:
-                        if ays >= i["quantity"]:
-                            if i["product id"] == sf:
-                                i["quantity"] -= ays
-
-                with open("products.json", "w") as z:
-                    json.dump(t, z, indent=2)
-                print(Fore.GREEN + "successfully ordered products")
-            else:
-                print('drinks not found')
+        print('foods  not found')
+        return False
 
     # order food and quantity - x
     def order_food(self):
-        print(Fore.CYAN + "1. Order food\n2. Order drink")
+        actions = {
+            1: 'food',
+            2: 'drink',
+        }
+        print(Fore.CYAN + "1. Order food \n"
+                          "2. Order drink \n"
+                          "3. exit")
         st = int(input(Fore.BLUE + '$ '))
-        if st == int(st):
-            if st == 1:
-                self.get_food()
-            elif st == 2:
-                self.get_drink()
+        if 0 < st < 3:
+            return self.get_food(actions[st])
+        if st == 3:
+            return False
+        print(Fore.YELLOW + "selection failed")
+        self.order_food()
+
+    # the enterance
+    def enterance(self):
+        self.create_json()
+        enterance_text = '''
+                        1. Sign
+                        2. add food
+                        3. add drink
+                        4. report
+                        5. exit
+                        : '''
+        selection = input(Fore.BLUE + enterance_text)
+        if selection == '1':
+            if self.sign():
+                self.main_menu()
+            else:
+                self.enterance()
+        elif selection == '2':
+            self.add_food()
+            self.enterance()
+        elif selection == '3':
+            self.add_drink()
+            self.enterance()
+        elif selection == '4':
+            self.report()
+            self.enterance()
+        elif selection == '5':
+            print(Fore.CYAN + "YOUR ADS HERE!")
+            exit()
+        else:
+            print(Fore.YELLOW + 'selection not exist')
+            self.enterance()
 
     # dining menu
-    def dining_menu(self):
+    def main_menu(self):
         menu = '''
-        1. order food
-        2. history
-        3. exit\n$ '''
+                        1. order food
+                        2. history
+                        3. exit\n$ '''
         s = input(Fore.MAGENTA + menu)
         if s == '1':
-            self.order_food()
-            self.dining_menu()
+            if self.order_food():
+                self.main_menu()
+            else:
+                self.main_menu()
         elif s == '2':
             self.order_history()
-            self.dining_menu()
+            self.main_menu()
         elif s == '3':
             self.enterance()
+        else:
+            print(Fore.YELLOW + 'selection not exist | Project/Dining_menu/else')
 
 
 # ----------------------------------------------------------------
 a = Restaurant()
 a.enterance()
-# a.order_food()
 # ----------------------------------------------------------------
 
 # if you finish project test all functions, don't forget testing
@@ -349,7 +355,6 @@ a.enterance()
 
 # ---------------------( PROBLEMS / BUGS )------------------>
 """
-#~1  If json file is empty, return empty warnings -> S u c c e s s
-
+errors: in home page
 """
 # ---------------------------------------------------------->
