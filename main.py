@@ -310,6 +310,7 @@ class Restaurant:
             self.enterance()
         else:
             print(Fore.YELLOW + 'selection not exist')
+            self.main_menu()
 
 
 # ----------------------------------------------------------------
