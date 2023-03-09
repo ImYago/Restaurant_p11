@@ -3,39 +3,6 @@ import json
 from colorama import Fore
 import datetime
 
-"""
-shop
-
-magazin
-restaranga oxshash + (product soni)
-
-----------------------------------------------------------------
-restaran
-
-1 login
-2 ovqat qoshish
-3 ichimlik qoshish
-4 hisobot
-
-* botirjon01
-* -mijoz
-
-* 1. ovqatga buyurtma
-* 2. oldingi buyurtmalari
-* 3. exit
-"""
-
-'''[
-  {
-    "type": "food",
-    "items": []
-  },
-  {
-    "type": "drink",
-    "items": []
-  }
-]'''
-
 
 class Restaurant:
     # simple variables
@@ -139,23 +106,15 @@ class Restaurant:
             print(Fore.YELLOW + "selection not found !")
 
     # report (last order)
-    def report(self):
+    @staticmethod
+    def report():
+        # all_history = []
+
         with open("users.json", "r") as f:
-            print(self.current_user)
             f = json.load(f)
             for i in f:
-                if i["id"] == self.current_user:
-                    j = i["order history"]
-                    if len(j) >= 1:
-                        print(f'last: {j[-1]}')
-                        break
-                    else:
-                        print(Fore.LIGHTCYAN_EX + 'history not found')
-                        break
-
-                else:
-                    print(Fore.YELLOW + "user not signed , please sign in for use report")
-                    break
+                # all_history.append(i["order history"])
+                print("user [" + str(i["username"]) + "] : " + str(i["order history"]))
 
     # username checking
     @staticmethod
@@ -234,10 +193,8 @@ class Restaurant:
             res = [p_name, int(p_price) * int(p_quantity), p_quantity, str(time)]
 
             for i in users_file:
-                print(self.current_user)
                 if i["id"] == self.current_user:
                     i["order history"].append(res)
-                    print(i["order history"])
 
         with open("users.json", "w") as f:
             json.dump(users_file, f, indent=2)
@@ -282,13 +239,13 @@ class Restaurant:
                                 print(Fore.GREEN + "successfully ordered products")
                                 return True
 
-            print('items not found')
+            print('item not found')
             return False
 
     # order food and quantity - x
     def order_food(self):
         actions = {
-            1: "drink",
+            1: "food",
             2: "drink",
         }
         print(Fore.CYAN + "1. Order food \n"
@@ -352,29 +309,11 @@ class Restaurant:
         elif s == '3':
             self.enterance()
         else:
-            print(Fore.YELLOW + 'selection not exist | Project/Dining_menu/else')
+            print(Fore.YELLOW + 'selection not exist')
 
 
 # ----------------------------------------------------------------
 a = Restaurant()
+# enterance -> main function
 a.enterance()
 # ----------------------------------------------------------------
-
-# ALL FUNCTIONS of RESTAURANT
-
-# create_json()
-# order_history()
-# check_user()
-# enterance()
-# signup()
-# login()
-# add_to_history()
-# order_food()
-# dining_menu()
-
-
-# ---------------------( PROBLEMS / BUGS )------------------>
-"""
-no have problem
-"""
-# ---------------------------------------------------------->
