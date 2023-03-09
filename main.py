@@ -3,6 +3,24 @@ import json
 from colorama import Fore
 import datetime
 
+"""
+restaran
+
+1 login
+2 ovqat qoshish
+3 ichimlik qoshish
+4 hisobot
+
+* botirjon01
+* -mijoz
+
+* 1. ovqatga buyurtma
+* 2. oldingi buyurtmalari
+* 3. exit
+"""
+
+
+
 
 class Restaurant:
     # simple variables
@@ -146,7 +164,7 @@ class Restaurant:
         username = input('Enter username: ')
         password = input('Enter password: ')
 
-        if not self.check_username(username) and len(username) == 0:
+        if not self.check_username(username) and username not in ["", " ", "0"]:
             with open("users.json", "r") as f:
                 file = json.load(f)
 
@@ -163,7 +181,7 @@ class Restaurant:
             with open("users.json", "w") as f:
                 json.dump(file, f, indent=2)
             return True
-        elif not self.check_username(username):
+        elif self.check_username(username):
             print(Fore.YELLOW + 'Username already taken')
             self.signup()
         else:
@@ -317,5 +335,5 @@ class Restaurant:
 
 # ----------------------------------------------------------------
 a = Restaurant()
-a.enterance() # main function
+a.enterance() # main function of project
 # ----------------------------------------------------------------
