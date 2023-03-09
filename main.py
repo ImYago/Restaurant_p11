@@ -168,6 +168,7 @@ class Restaurant:
             self.signup()
         else:
             print(Fore.YELLOW + 'minimum username characters : 1')
+            self.signup()
 
     def sign(self):
         print(Fore.GREEN + '1. Sign In \n'
