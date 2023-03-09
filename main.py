@@ -6,20 +6,19 @@ import datetime
 """
 restaran
 
-1 login
-2 ovqat qoshish
-3 ichimlik qoshish
-4 hisobot
+1 login   ->  sign
+2 ovqat qoshish  ->  add food 
+3 ichimlik qoshish  ->  add drink
+4 hisobot  -> report
+(5. exit)
 
 * botirjon01
 * -mijoz
 
-* 1. ovqatga buyurtma
-* 2. oldingi buyurtmalari
+* 1. ovqatga buyurtma   ->  order food
+* 2. oldingi buyurtmalari  ->  history
 * 3. exit
 """
-
-
 
 
 class Restaurant:
@@ -271,13 +270,18 @@ class Restaurant:
         print(Fore.CYAN + "1. Order food \n"
                           "2. Order drink \n"
                           "3. exit")
-        st = int(input(Fore.BLUE + '$ '))
-        if 0 < st < 3:
-            return self.get_food(actions[st])
-        if st == 3:
-            return False
-        print(Fore.YELLOW + "selection failed")
-        self.order_food()
+        st = input(Fore.BLUE + '$ ')
+        if st.isdigit():
+            st = int(st)
+            if 0 < st < 3:
+                return self.get_food(actions[st])
+            if st == 3:
+                return False
+            print(Fore.YELLOW + "selection failed")
+            self.order_food()
+        else:
+            print(Fore.YELLOW + 'select with numbers only!')
+            self.order_food()
 
     # the enterance
     def enterance(self):
