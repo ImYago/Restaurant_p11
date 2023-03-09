@@ -6,18 +6,14 @@ import datetime
 """
 restaran
 
-1 login   ->  sign
-2 ovqat qoshish  ->  add food 
-3 ichimlik qoshish  ->  add drink
-4 hisobot  -> report
-(5. exit)
+1 login -> sign
+2 ovqat qoshish  -> add food
+3 ichimlik qoshish  -> add drink
+4 hisobot  ->  report
 
-* botirjon01
-* -mijoz
-
-* 1. ovqatga buyurtma   ->  order food
-* 2. oldingi buyurtmalari  ->  history
-* 3. exit
+    * 1. ovqatga buyurtma  ->  order food
+    * 2. oldingi buyurtmalari  ->  history
+    * 3. exit
 """
 
 
@@ -187,10 +183,12 @@ class Restaurant:
             print(Fore.YELLOW + 'minimum username characters : 1')
 
     def sign(self):
-        print(Fore.GREEN + '1. Sign In \n'
-                           '2. Sign Up \n'
-                           '3. exit')
-        s = input(Fore.LIGHTGREEN_EX + '$ ')
+        st = ''' 
+            1. Sign In 
+            2. Sign Up
+            3. exit
+            $ '''
+        s = input(Fore.LIGHTGREEN_EX + st)
 
         if not s.isalpha():
             # Log in
@@ -267,10 +265,12 @@ class Restaurant:
             1: "food",
             2: "drink",
         }
-        print(Fore.CYAN + "1. Order food \n"
-                          "2. Order drink \n"
-                          "3. exit")
-        st = input(Fore.BLUE + '$ ')
+        ot = '''
+            1. Order food
+            2. Order drink
+            3. exit
+            $ '''
+        st = input(Fore.BLUE + ot)
         if st.isdigit():
             st = int(st)
             if 0 < st < 3:
@@ -287,12 +287,12 @@ class Restaurant:
     def enterance(self):
         self.create_json()
         enterance_text = '''
-                        1. Sign
-                        2. add food
-                        3. add drink
-                        4. report
-                        5. exit
-                        : '''
+            1. Sign
+            2. add food
+            3. add drink
+            4. report
+            5. exit
+            : '''
         selection = input(Fore.BLUE + enterance_text)
         if selection == '1':
             if self.sign():
@@ -318,9 +318,10 @@ class Restaurant:
     # dining menu
     def main_menu(self):
         menu = '''
-                  1. order product
-                  2. history
-                  3. exit\n$ '''
+            1. order food
+            2. history
+            3. exit
+            $ '''
         s = input(Fore.MAGENTA + menu)
         if s == '1':
             if self.order_food():
@@ -339,5 +340,5 @@ class Restaurant:
 
 # ----------------------------------------------------------------
 a = Restaurant()
-a.enterance() # main function of project
+a.enterance()  # main function of the restaurant
 # ----------------------------------------------------------------
