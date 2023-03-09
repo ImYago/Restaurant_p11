@@ -318,9 +318,9 @@ class Restaurant:
     # dining menu
     def main_menu(self):
         menu = '''
-                        1. order food
-                        2. history
-                        3. exit\n$ '''
+                  1. order product
+                  2. history
+                  3. exit\n$ '''
         s = input(Fore.MAGENTA + menu)
         if s == '1':
             if self.order_food():
