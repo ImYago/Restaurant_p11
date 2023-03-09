@@ -146,7 +146,7 @@ class Restaurant:
         username = input('Enter username: ')
         password = input('Enter password: ')
 
-        if not self.check_username(username) and username != '':
+        if not self.check_username(username) and len(username) == 0:
             with open("users.json", "r") as f:
                 file = json.load(f)
 
@@ -168,7 +168,6 @@ class Restaurant:
             self.signup()
         else:
             print(Fore.YELLOW + 'minimum username characters : 1')
-            self.signup()
 
     def sign(self):
         print(Fore.GREEN + '1. Sign In \n'
@@ -242,7 +241,7 @@ class Restaurant:
                                 print(Fore.GREEN + "successfully ordered products")
                                 return True
 
-            print('item not found')
+            print('items not found')
             return False
 
     # order food and quantity - x
@@ -318,6 +317,5 @@ class Restaurant:
 
 # ----------------------------------------------------------------
 a = Restaurant()
-# enterance -> main function
-a.enterance()
+a.enterance() # main function
 # ----------------------------------------------------------------
