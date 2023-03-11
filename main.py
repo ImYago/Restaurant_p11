@@ -2,25 +2,14 @@ import os
 import json
 from colorama import Fore
 import datetime
-
-"""
-restaran
-
-1 login -> sign
-2 ovqat qoshish  -> add food
-3 ichimlik qoshish  -> add drink
-4 hisobot  ->  report
-
-    * 1. ovqatga buyurtma  ->  order food
-    * 2. oldingi buyurtmalari  ->  history
-    * 3. exit
-"""
+import bcrypt
 
 
 class Restaurant:
     # simple variables
     def __init__(self):
         self.current_user = 0
+        self.current_grade = ''
 
     # create json files
     @staticmethod
@@ -62,24 +51,27 @@ class Restaurant:
 
     # check user
     def check_user(self):
-
         username = input(Fore.RESET + "Enter username: ")
-        password = input(Fore.RESET + "Enter password: ")
+        password = input(Fore.RESET + "Enter password: ").encode()
 
         with open('users.json', 'r') as f:
             file = json.load(f)
             for i in file:
-                if i["username"] == username and i["password"] == password:
-                    self.current_user = int(i["id"])
-                    return True
-            return False
+                if i["username"] == username:
+                    hashed_password = i["password"].encode()
+                    if bcrypt.checkpw(password, hashed_password):
+                        self.current_user = int(i["id"])
+                        self.current_grade = self.get_grade(username)
+                        return True
+        return False
 
     @staticmethod
-    def make_p_id():
+    def make_p_id(type_):
         with open('products.json', 'r') as f:
-            e = json.load(f)
-            for i in e:
-                return len(i["items"]) + 1
+            products = json.load(f)
+            for i in products:
+                if i["type"] == type_:
+                    return len(i["items"]) + 1
 
     @staticmethod
     def make_u_id():
@@ -87,12 +79,19 @@ class Restaurant:
             e = json.load(f)
             return len(e) + 1
 
+    # encrypt
+    @staticmethod
+    def encrypt(password):
+        salt = bcrypt.gensalt()  # Generate a salt value
+        hashed_password = bcrypt.hashpw(password.encode(), salt)  # Hash the password using bcrypt
+        return hashed_password
+
     # add food
     def add_item(self, selection):
-        if 1 < int(selection) < 4:
-            food_type = 'food' if int(selection) == 2 else 'drink'
+        if 0 < int(selection) < 3:
+            food_type = 'food' if int(selection) == 1 else 'drink'
             print(Fore.LIGHTBLUE_EX + f'default product type: {food_type}')
-            p_id = self.make_p_id()
+            p_id = self.make_p_id(food_type)
             name = input(Fore.CYAN + 'Food name: ')
             price = input(Fore.MAGENTA + 'Food price: ')
             quantity = int(input(Fore.LIGHTRED_EX + 'Food quantity: '))
@@ -127,7 +126,7 @@ class Restaurant:
             f = json.load(f)
             for i in f:
                 # all_history.append(i["order history"])
-                print("user [" + str(i["username"]) + "] : " + str(i["order history"]))
+                print(Fore.LIGHTMAGENTA_EX + "user [" + str(i["username"]) + "] : " + str(i["order history"]))
 
     # username checking
     @staticmethod
@@ -136,7 +135,7 @@ class Restaurant:
             file = json.load(f)
 
             for i in file:
-                if username == i['username']:
+                if username.lower() == i['username'].lower():
                     return True
             return False
 
@@ -147,7 +146,7 @@ class Restaurant:
             return True
         else:
             sign_up = input(Fore.YELLOW + 'Password or username incorrect!\n'
-                                          'Would you try again? [y/N]\n'
+                                          'Would you try again? [y/n]\n'
                                           ': ')
             if sign_up.lower() in ['yes', 'y', 'yep', 'ha', 'yeah']:
                 return self.login()
@@ -156,58 +155,75 @@ class Restaurant:
 
     # sign up
     def signup(self):
-        username = input('Enter username: ')
-        password = input('Enter password: ')
+        username = input(Fore.LIGHTWHITE_EX + 'Enter username (0 for exit): ')
+        if username == '0':
+            return False
+        if len(username.strip()) > 0:
+            password = input(Fore.LIGHTWHITE_EX + 'Enter password: ')
+            if len(password) > 0:
+                grade = input('Are you guest !? [y/n]: ')
+                if grade.lower() in ['yes', 'y', 'yep', 'ha', 'yeah']:
+                    grade = True
+                    self.current_grade = 'True'
+                elif grade.lower() in ['no', 'nah', 'not', 'yoq', 'n']:
+                    grade = False
+                    self.current_grade = 'False'
+                else:
+                    print(Fore.LIGHTYELLOW_EX + 'Invalid grade!')
+                    self.signup()
 
-        if not self.check_username(username) and username not in ["", " ", "0"]:
-            with open("users.json", "r") as f:
-                file = json.load(f)
+                if not self.check_username(username) and username not in ["", " ", "0"]:
+                    with open("users.json", "r") as f:
+                        file = json.load(f)
 
-            u_id = self.make_u_id()
-            self.current_user = int(u_id)
+                    u_id = self.make_u_id()
+                    self.current_user = int(u_id)
 
-            new_user = {
-                "id": u_id,
-                "username": username,
-                "password": password,
-                "order history": []
-            }
-            file.append(new_user)
-            with open("users.json", "w") as f:
-                json.dump(file, f, indent=2)
-            return True
-        elif self.check_username(username):
-            print(Fore.YELLOW + 'Username already taken')
-            self.signup()
-        else:
-            print(Fore.YELLOW + 'minimum username characters : 1')
+                    password = self.encrypt(password)
 
-    def sign(self):
-        st = ''' 
-            1. Sign In 
-            2. Sign Up
-            3. exit
-            $ '''
-        s = input(Fore.LIGHTGREEN_EX + st)
-
-        if not s.isalpha():
-            # Log in
-            if int(s) == 1:
-                return self.login()
-
-            # Sign up
-            elif int(s) == 2:
-                if self.signup():
-                    print(Fore.LIGHTGREEN_EX + 'Success !')
+                    new_user = {
+                        "id": u_id,
+                        "username": username.strip(),
+                        "password": password.decode(),
+                        "order history": [],
+                        "grade": str(grade)
+                    }
+                    file.append(new_user)
+                    with open("users.json", "w") as f:
+                        json.dump(file, f, indent=2)
                     return True
-        return False
+                elif self.check_username(username):
+                    print(Fore.YELLOW + 'Username already taken')
+                    self.signup()
+                else:
+                    print(Fore.YELLOW + 'minimum username characters : 1')
+                    return False
+            else:
+                print(Fore.LIGHTYELLOW_EX + 'minimum password characters : 1')
+                self.signup()
+        else:
+            print(Fore.LIGHTYELLOW_EX + "minimum username characters : 1")
+            self.signup()
+
+    @staticmethod
+    def get_grade(username):
+        with open("users.json", "r") as f:
+            users = json.load(f)
+
+        for i in users:
+            if i["username"] == username:
+                return i["grade"]
 
     # add information to the history
     def add_to_history(self, p_name, p_price, p_quantity):
         with open("users.json", "r") as d:
             users_file = json.load(d)
             time = datetime.datetime.now()
-            res = [p_name, int(p_price) * int(p_quantity), p_quantity, str(time)]
+            int_price = ''
+            for i in p_price:
+                if i == i.isdigit():
+                    int_price += i
+            res = [p_name, p_quantity, str(time)]
 
             for i in users_file:
                 if i["id"] == self.current_user:
@@ -260,82 +276,98 @@ class Restaurant:
             return False
 
     # order food and quantity - x
-    def order_food(self):
+    def order_food(self, st):
         actions = {
             1: "food",
             2: "drink",
         }
-        ot = '''
-            1. Order food
-            2. Order drink
-            3. exit
-            $ '''
-        st = input(Fore.BLUE + ot)
+
         if st.isdigit():
-            st = int(st)
-            if 0 < st < 3:
-                return self.get_food(actions[st])
-            if st == 3:
+            if 0 < int(st) < 3:
+                return self.get_food(actions[int(st)])
+            if int(st) == 3:
                 return False
             print(Fore.YELLOW + "selection failed")
-            self.order_food()
+            self.order_food(st)
         else:
             print(Fore.YELLOW + 'select with numbers only!')
-            self.order_food()
+            self.order_food(st)
 
     # the enterance
     def enterance(self):
         self.create_json()
         enterance_text = '''
-            1. Sign
-            2. add food
-            3. add drink
-            4. report
-            5. exit
-            : '''
-        selection = input(Fore.BLUE + enterance_text)
-        if selection == '1':
-            if self.sign():
-                self.main_menu()
-            else:
-                self.enterance()
-        elif selection == '2':
-            self.add_item(selection)
-            self.enterance()
-        elif selection == '3':
-            self.add_item(selection)
-            self.enterance()
-        elif selection == '4':
-            self.report()
-            self.enterance()
-        elif selection == '5':
-            print(Fore.GREEN + 'See you soon 👋\n' + Fore.MAGENTA + "YOUR ADS HERE!")
-            exit()
+1. register
+2. login
+3. exit
+: '''
+        selection = input(Fore.LIGHTBLUE_EX + enterance_text)
+        if selection.isdigit():
+            if selection == '1':
+                if self.signup():
+                    self.main_page()
+                else:
+                    self.enterance()
+            elif selection == '2':
+                if self.login():
+                    self.main_page()
+                else:
+                    self.enterance()
+            elif selection == '3':
+                print(Fore.GREEN + 'See you soon 👋\n' + Fore.MAGENTA + "YOUR ADS HERE!")
+                exit()
         else:
             print(Fore.YELLOW + 'selection not exist')
             self.enterance()
 
     # dining menu
-    def main_menu(self):
-        menu = '''
-            1. order food
-            2. history
-            3. exit
-            $ '''
-        s = input(Fore.MAGENTA + menu)
-        if s == '1':
-            if self.order_food():
-                self.main_menu()
+    def main_page(self):
+        if self.current_grade == 'True':
+            menu = '''
+1. order food 
+2. order drink
+3. history
+4. exit
+$ '''
+            s = input(Fore.LIGHTGREEN_EX + menu)
+            if s == '1':
+                if self.order_food(s):
+                    self.main_page()
+                else:
+                    self.main_page()
+            elif s == '2':
+                self.order_food(s)
+                self.main_page()
+            elif s == '3':
+                self.order_history()
+                self.main_page()
+            elif s == '4':
+                self.enterance()
             else:
-                self.main_menu()
-        elif s == '2':
-            self.order_history()
-            self.main_menu()
-        elif s == '3':
-            self.enterance()
+                print(Fore.YELLOW + 'selection not exist')
+                self.main_page()
+        elif self.current_grade == 'False':
+            t = '''
+1. add food
+2. add drink 
+3. report 
+4. exit
+$ '''
+            s = input(Fore.LIGHTCYAN_EX + t)
+            if s.isdigit():
+                if s == '1':
+                    self.add_item(s)
+                    self.main_page()
+                elif s == '2':
+                    self.add_item(s)
+                    self.main_page()
+                elif s == '3':
+                    self.report()
+                    self.main_page()
+                elif s == '4':
+                    self.enterance()
         else:
-            print(Fore.YELLOW + 'selection not exist')
-            self.main_menu()
+            print(Fore.LIGHTRED_EX + 'Grade not exist')
 
 
 # ----------------------------------------------------------------
